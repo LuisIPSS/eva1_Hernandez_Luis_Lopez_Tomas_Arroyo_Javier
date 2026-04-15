@@ -63,5 +63,10 @@ public function up(): void
 }
 ```
 Donde factores como el primary key se manejan con $table->id(), los varchar con $table->string() y se especifica la longitud, los unique con ->unique() que no permite duplicados, los nullable con ->nullable() que permite valores nulos y los timestamps con ->timestamps() que crea dos columnas para la fecha y hora de creacion y actualizacion.
+
 3.- Ejecutamos la migracion con ```php artisan migrate```
+![alt text](imgs/image-3.png)
+
+4.- Verificamos con dbeaver que la tabla se creo correctamente.
+![alt text](imgs/image-4.png)
 
