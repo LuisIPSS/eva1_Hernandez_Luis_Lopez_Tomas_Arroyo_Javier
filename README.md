@@ -12,7 +12,7 @@ Se utiliza Nginx y su respectivo default.conf para renderizar la aplicacion web.
 # Readme.md eva1_Hernandez_Luis
 
 Get/metodo check
-1.- Ingresamos al contenedor php y ejecutamos ```php artisan make:controller HealthController``` y se crea el controlador en ```app/Controllers/HeHealthController.php```
+1.- Ingresamos al contenedor php y ejecutamos ```php artisan make:controller HealthController``` y se crea el controlador en ```app/Controllers/HealthController.php```
 ![alt text](imgs/image.png)
 
 2.- Creamos el metodo check
