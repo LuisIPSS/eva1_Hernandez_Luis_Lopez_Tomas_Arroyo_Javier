@@ -1,4 +1,18 @@
 # Readme.md LaravelOneCommand
+**Rol del Backend:** El backend es la lógica del negocio, y consiste en toda la estructura que sirve de puente entre la interfaz de Fintech que el usuario ve e interactua, y la base de datos que almacena la informacion. Ese puente que constituye el backend debe ser uno tal que sea capaz de conservar la integridad de la informacion asi como tambien garantizar la seguridad tanto del usuario como de la propia informacion alamacenada y la estructura misma (definir y acotar permisos y autorizaciones). El backend recibe la peticion del usuario y ejecuta la logica (ve quien envia la informacion, calcula, verifica permiso, etc) gestionando la informacion de la base de datos. Tras esta logica se genera una respuesta estructurada generalmente devuelta en formato JSON. Este puente que es el backend garantiza coherencia y eficiencia entre cliente, servidor y base de datos.
+**Diagrama:** El modelo es el dato, la vista la respuesta al cliente respecto del dato, y el controlador el interpmediario. En ese sentiduo un diagrama basico del flujo en cuestion es USUARIO > CONTROLADOR > MODELO > VISTA > USUARIO. En detalle NGINX es el servidor por el cual el usuario ingresa las peticiones (por ej. GET).
+La deriva al contenedor de PHP
+Ahi el archivo de Ruta busca el controlador asignado y se ejecuta el metodo.
+Se genera la respuesta y se asigna el codigo.
+El motor php devuelve al cliente esta respuesta en JSON a traves del NGINX donde comenzo todo.
+**Criterios de Calidad del SPRINT 0**
+Modularidad> Se utiliza el controlador "Health"
+Mantenibilidad> Se realizan migraciones evitando los scripts de SQL dandole escalabilidad y portabilidad (database/seeders y migrations)
+Claridad de configuracion> El archivo .env en la raiz garantiza rapidez de modificacion sin afectar la fuente siendo una estrategia segura, que de la mano con la automatizacion del init.sh le da dinamismo para la inyeccion de datos. 
+Separacion de Responsabilidades> El patron MVC separa codigos siendo mas preciso y eficiente la eventual reparacion de los codigos.
+Trazabilidad> El uso de codigos de estado HTTP estandar facilita el monitoreo de los fallos y da uniformidad a las respuestas
+
+
 1. Configura tu .env.
 2. ```docker compose up``` Para crear el container con los servicios requeridos.
 3. Espera y verifica que se haya creado el proyecto.
