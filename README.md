@@ -118,7 +118,7 @@ public function run(): void
 4.- Verificamos con dbeaver que los datos se insertaron correctamente.
 ![alt text](imgs/image-7.png)
 
-#### INTEGRANTES: LUIS HERNANDEZ / TOMAS LOPEZ FRANULIC / JAVIER ARROYO MENDEZ.
+#### INTEGRANTES: LUIS HERNANDEZ CURUMILLA / TOMAS LOPEZ FRANULIC / JAVIER ARROYO MENDEZ.
 
 # Readme.md LaravelOneCommand
 
