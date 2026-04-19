@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +21,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Query Logging - Registra todas las consultas SQL con su tiempo de ejecución
+        if (config('app.debug')) {
+            DB::listen(function ($query) {
+                Log::info('Query ejecutada', [
+                    'sql' => $query->sql,
+                    'bindings' => $query->bindings,
+                    'time' => $query->time . 'ms',
+                ]);
+            });
+        }
     }
 }

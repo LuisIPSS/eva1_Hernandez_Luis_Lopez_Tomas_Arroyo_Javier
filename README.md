@@ -450,6 +450,55 @@ Route::delete('delete/clients/{id}', [Clients::class, 'destroy']);
     });
 ```
 
+## 1.1.6 Resuelve problemas de rendimiento y escalabilidad en una aplicación de backend.
+
+### Balanceo de carga
+Ya se aplica ya que cuenta con Nginx como reverse proxy y este delega a PHP-FPM vía fastcgi_pass php_backend
+
+### Escalado horizontal/vertical
+* Escalado horizontal: Se puede escalar horizontalmente aumentando el numero de replicas del servicio php. Para esto necesitamos modificar el docker-compose.yml y agregar:
+```yaml
+deploy: 
+    replicas: 3
+```
+Y modificar el nginx para que distribuya la carga entre las replicas.
+Para finalizar iniciamos el servicio con: 
+```bash
+docker compose up --scale php=3
+```
+
+* Escalado vertical: Se puede escalar verticalmente asignando más o menos recursos (CPU y Memoria) a los contenedores. Esto se hace en el archivo `docker-compose.yml` dentro de la sección resources:
+```yaml
+resources:
+  limits:
+    cpus: '0.50'     # Límite máximo de CPU
+    memory: 512M      # Límite máximo de Memoria
+  reservations:
+    cpus: '0.25'     # CPU mínima reservada
+    memory: 256M      # Memoria mínima reservada
+```
+Para aplicar los cambios ejecutamos:
+```bash
+docker compose up -d
+```
+
+### Profiling
+Se instala telescope para monitorear el rendimiento de la aplicacion y se puede acceder a el a traves de http://localhost/telescope
+```bash
+docker compose exec php composer require laravel/telescope --dev
+```
+```bash
+docker compose exec php php artisan telescope:install
+```
+```bash
+docker compose exec php php artisan migrate
+```
+```bash
+docker compose exec php php artisan telescope:publish
+```
+Tambien se configura Query Logging para monitorear las consultas SQL.
+
+* Importante: Cambiar el ```APP_DEBUG=true``` en el .env para que funcione el profiling.
 
 #### INTEGRANTES: LUIS HERNANDEZ CURUMILLA / TOMAS LOPEZ FRANULIC / JAVIER ARROYO MENDEZ.
 
@@ -461,7 +510,8 @@ Para el caso del servicio de MySQL, este se configuro en el puerto default (3306
 Se utiliza Nginx y su respectivo default.conf para renderizar la aplicacion web.
 
 1. Configura tu .env.
-2. ```docker compose up``` Para crear el container con los servicios requeridos.
+2. ```docker compose up``` Para crear el container con los servicios requeridos. 
+2.1. Si se desea escalar el servicio de php, se debe modificar el docker-compose.yml y agregar ```deploy: replicas: 3``` y ejecutar ```docker compose up --scale php=3```
 3. Espera y verifica que se haya creado el proyecto.
 4. ```docker compose exec php php artisan migrate``` Para migrar la base de datos. (Si es necesario).
 
