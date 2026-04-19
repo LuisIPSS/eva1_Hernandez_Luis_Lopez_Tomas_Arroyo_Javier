@@ -41,6 +41,31 @@ Agregamos la ruta ```Route::get('/health', [HealthController::class, 'check']);`
 
 # **D. Base de datos** 
 
+### Modelo ORM
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Client extends Model
+{
+    use HasFactory;
+
+    protected $table = 'clients';
+    protected $primaryKey = 'client_id';
+    protected $fillable = [
+        'first_name',
+        'last_name',
+        'email',
+        'phone_number',
+        'date_of_birth'
+    ];
+}
+```
+
 ### Migrations
 1.- Ingresamos al contenedor php y ejecutamos ```php artisan make:migration create_table_clients```, lo cual crea un archivo en ```database/migrations```.
 ![alt text](imgs/image-2.png)
@@ -117,6 +142,314 @@ public function run(): void
 
 4.- Verificamos con dbeaver que los datos se insertaron correctamente.
 ![alt text](imgs/image-7.png)
+
+## 1.1.4 Desarrolla una API RESTful utilizando un framework de backend. y CRUD
+
+### Crear un cliente
+#### Rutas
+```
+Route::post('create/clients', [Clients::class, 'create']);
+```
+#### Controlador
+```php
+    public function create(Request $request)
+    {
+        $validated = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:clients,email',
+            'phone_number' => 'nullable|string|max:20',
+            'date_of_birth' => 'nullable|date'
+        ]);
+
+        $client = Client::create($validated);
+
+        if (!$client) {
+            return response()->json([
+                "message" => "Cliente no creado",
+                "data" => null
+            ], 404);
+        }
+        return response()->json([
+            "message" => "Cliente creado exitosamente",
+            "data" => $client
+        ], 201);
+
+    }
+```
+
+### Postman
+
+```POST``` http://localhost/api/create/clients
+```Request
+{
+    "first_name": "Luis",
+    "last_name": "Hernandez",
+    "email": "abc@asc.cl",
+    "phone_number": "123456789",
+    "date_of_birth": "1990-01-01"
+}
+```
+
+```Response
+{
+    "message": "Cliente creado exitosamente",
+    "data": {
+        "client_id": 1,
+        "first_name": "Luis",
+        "last_name": "Hernandez",
+        "email": "abc@asc.cl",
+        "phone_number": "123456789",
+        "date_of_birth": "1990-01-01",
+        "created_at": "2022-01-01T00:00:00.000000Z",
+        "updated_at": "2022-01-01T00:00:00.000000Z"
+    }
+}
+```
+### Extraer todos los clientes
+#### Rutas
+```
+Route::get('read/clients', [Clients::class, 'store']);
+```
+#### Controlador
+```php
+    public function store(Request $request)
+    {
+        $clients = Client::orderBy("client_id", "desc")->paginate(10);
+
+        if (!$clients) {
+            return response()->json([
+                "message" => "Clientes no encontrados",
+                "data" => null
+            ], 404);
+        }
+        return response()->json([
+            "message" => "Clientes obtenidos exitosamente",
+            "data" => $clients
+        ], 200);
+
+    }
+```
+
+### Postman
+```GET``` http://localhost/api/read/clients
+
+```Response
+{
+    "message": "Clientes obtenidos exitosamente",
+    "data": {
+        "current_page": 1,
+        "data": [
+            {
+                "client_id": 4,
+                "first_name": "Tomas",
+                "last_name": "Lopez",
+                "email": "tomas@test.com",
+                "phone_number": null,
+                "date_of_birth": null,
+                "created_at": "2026-04-19T18:47:20.000000Z",
+                "updated_at": "2026-04-19T18:47:20.000000Z"
+            },
+            {
+                "client_id": 2,
+                "first_name": "Javier",
+                "last_name": "Arroyo",
+                "email": "javier@test.com",
+                "phone_number": "123456789",
+                "date_of_birth": null,
+                "created_at": "2026-04-19T18:47:20.000000Z",
+                "updated_at": "2026-04-19T18:47:20.000000Z"
+            },
+        ]
+    }
+}
+```
+
+### Extraer un cliente por id
+#### Rutas
+```
+Route::get('readed/clients/{id}', [Clients::class, 'readed']);
+```
+#### Controlador
+```php
+    public function readed(Request $request, $id)
+    {
+        $client = Client::find($id);
+
+        if (!$client) {
+            return response()->json([
+                "message" => "Cliente no encontrado",
+                "data" => null
+            ], 404);
+        }
+
+        return response()->json([
+            "message" => "Cliente obtenido exitosamente",
+            "data" => $client
+        ], 200);
+    }
+```
+
+### Postman
+```GET``` http://localhost/api/readed/clients/1
+
+```Response
+{
+    "message": "Cliente obtenido exitosamente",
+    "data": {
+        "client_id": 1,
+        "first_name": "Luis",
+        "last_name": "Hernandez",
+        "email": "abc@asc.cl",
+        "phone_number": "123456789",
+        "date_of_birth": "1990-01-01",
+        "created_at": "2022-01-01T00:00:00.000000Z",
+        "updated_at": "2022-01-01T00:00:00.000000Z"
+    }
+}
+```
+
+### Actualizar un cliente por id
+#### Rutas
+```
+Route::put('update/clients/{id}', [Clients::class, 'update']);
+```
+#### Controlador
+```php
+    public function update(Request $request, $id)
+    {
+        $client = Client::find($id);
+
+        if (!$client) {
+            return response()->json([
+                "message" => "Cliente no encontrado",
+                "data" => null
+            ], 404);
+        }
+
+        $validated = $request->validate([
+            'first_name' => 'sometimes|string|max:255',
+            'last_name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:clients,email,' . $client->client_id . ',client_id',
+            'phone_number' => 'nullable|string|max:20',
+            'date_of_birth' => 'nullable|date'
+        ]);
+
+        $client->update($validated);
+
+        return response()->json([
+            "message" => "Cliente actualizado exitosamente",
+            "data" => $client
+        ], 200);
+    }
+```
+
+### Postman
+```PUT``` http://localhost/api/update/clients/1
+
+```Request
+{
+    "first_name": "Luis",
+    "last_name": "Hernandez",
+    "email": "abc@asc.cl",
+    "phone_number": "123456789",
+    "date_of_birth": "1990-01-01"
+}
+```
+
+```Response
+{
+    "message": "Cliente actualizado exitosamente",
+    "data": {
+        "client_id": 1,
+        "first_name": "Luis",
+        "last_name": "Hernandez",
+        "email": "abc@asc.cl",
+        "phone_number": "123456789",
+        "date_of_birth": "1990-01-01",
+        "created_at": "2022-01-01T00:00:00.000000Z",
+        "updated_at": "2022-01-01T00:00:00.000000Z"
+    }
+}
+```
+
+### Eliminar un cliente por id
+#### Rutas
+```
+Route::delete('delete/clients/{id}', [Clients::class, 'destroy']);
+```
+#### Controlador
+```php
+    public function destroy($id)
+    {
+        $client = Client::find($id);
+        if (!$client) {
+            return response()->json([
+                "message" => "Cliente no encontrado",
+                "data" => null
+            ], 404);
+        }
+
+        $client->delete();
+
+        return response()->json([
+            "message" => "Cliente eliminado exitosamente",
+            "data" => $client
+        ], 200);
+    }
+```
+
+### Postman
+```DELETE``` http://localhost/api/delete/clients/1
+
+```Response
+{
+    "message": "Cliente eliminado exitosamente",
+    "data": {
+        "client_id": 1,
+        "first_name": "Luis",
+        "last_name": "Hernandez",
+        "email": "abc@asc.cl",
+        "phone_number": "123456789",
+        "date_of_birth": "1990-01-01",
+        "created_at": "2022-01-01T00:00:00.000000Z",
+        "updated_at": "2022-01-01T00:00:00.000000Z"
+    }
+}
+```
+
+## 1.2.1 Diseña solicitudes HTTP donde el servidor responde a las solicitudes del cliente de manera precisa y eficiente
+* 404 para recursos no encontrados
+```php
+    if (!$client) {
+        return response()->json([
+            "message" => "Cliente no creado",
+            "data" => null
+        ], 404);
+    }
+```
+* 200 para respuestas exitosas
+```php
+    return response()->json([
+        "message" => "Cliente creado exitosamente",
+        "data" => $client
+    ], 200);
+```
+* 405 para metodos no permitidos
+```php
+    ->withExceptions(function (Exceptions $exceptions): void {
+        // 405 - Método HTTP no permitido
+        $exceptions->renderable(function (MethodNotAllowedHttpException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    "message" => "Método HTTP no permitido para esta ruta",
+                    "data" => null
+                ], 405);
+            }
+        });
+    });
+```
+
 
 #### INTEGRANTES: LUIS HERNANDEZ CURUMILLA / TOMAS LOPEZ FRANULIC / JAVIER ARROYO MENDEZ.
 
